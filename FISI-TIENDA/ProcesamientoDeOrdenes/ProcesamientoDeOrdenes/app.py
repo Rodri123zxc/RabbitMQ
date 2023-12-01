@@ -46,33 +46,36 @@ def pagar():
     
     thread_adi = threading.Thread(target=RabbitMQ.recibirYProcesarMensajeADI)
     
+    
     thread_adi.start()
     thread_adi.join()
-  
     
-    thread_cxc = threading.Thread(target=RabbitMQ.recibirYProcesarMensajeCxC)
-    thread_cxc.start()
-  
-    thread_cxc.join()
-    
-    
-    validarInventario = RabbitMQ.mensajeRecibido_ADI
-    print("validarInventario: " + str(validarInventario))
-    
+    validarInventario = RabbitMQ.mensajeADI
+    print("validarInventario: " + str(validarInventario)) 
     
     if validarInventario:
+        print("VERDADEROOO")
+        thread_cxc = threading.Thread(target=RabbitMQ.recibirYProcesarMensajeCxC)
+        thread_cxc.start()
         thread_cxc.join()
-        resultado_final = RabbitMQ.mensajeRecibido_CxC
+        
+        print("VERDADEROOO Y PARO EL CONSUMO DE CXC")
+        resultado_final = RabbitMQ.mensajeCxC
         print("resultado_final: " + str(resultado_final))
-        RabbitMQ.mensajeRecibido_ADI = None
-        RabbitMQ.mensajeRecibido_CxC = None
+        
+        RabbitMQ.mensajeADI = None
+        RabbitMQ.mensajeCxC = None
         
         validarInventario = None
-        return jsonify({'success': True, 'message': 'Pago exitoso', 'resultado_final': resultado_final})
+        if resultado_final:
+            return jsonify({'success': True, 'message': 'Pago exitoso', 'resultado_final': resultado_final})
+        else:
+            return jsonify({'success': False, 'message': 'Pago fallido'})
     else:
+        print("FALSO")
         validarInventario = None
-        RabbitMQ.mensajeRecibido_ADI = None
-        RabbitMQ.mensajeRecibido_CxC = None
+        RabbitMQ.mensajeADI = None
+        RabbitMQ.mensajeCxC = None
         return jsonify({'success': False, 'message': 'Pago fallido'})
     
     

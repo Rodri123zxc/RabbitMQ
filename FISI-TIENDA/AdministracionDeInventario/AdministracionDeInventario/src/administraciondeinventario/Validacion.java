@@ -8,6 +8,8 @@ import java.util.logging.Logger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import rabbitmq.RabbitMQ;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Validacion {
     private RabbitMQ middleware;
@@ -86,8 +88,23 @@ public class Validacion {
         if(validado){
             System.out.println("resultado bueno: ");  
             middleware.enviarResultado(true);
+            
             System.out.println("Se envio resultado: ");  
-            middleware.enviarMensaje(mensajeRecibido);
+            
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    
+                    try {
+                        System.out.println("Se envió resultado: ");
+                        middleware.enviarMensaje(mensajeRecibido);
+                    } catch (Exception ex) {
+                        System.out.println("Error enviar mensaje a Reserva ");
+                    }
+                }
+            }, 1000);
+            
         }
         else{
             System.out.println("resultado malo ");  

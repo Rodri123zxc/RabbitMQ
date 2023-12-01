@@ -7,6 +7,7 @@ class RabbitMQ:
         self.PUBLISH_QUEUE_NAME = "Reserva_queue_exchange"
         
         self.CONSUME_EXCHANGE_NAME = "AdministracionDeInventario_exchange"
+        
         self.channel = None
         self.queue_name = None
         self.mensajeRecibido = []
