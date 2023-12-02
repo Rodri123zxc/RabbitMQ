@@ -21,12 +21,12 @@ mensajeCxC = None
 
 def callback1(ch, method, properties, body):
     global mensajeADI
-    mensajeADI = parsear_mensaje(body)
+    mensajeADI = desempaquetarMensaje(body)
     channel1.stop_consuming()
 
 def callback2(ch, method, properties, body):
     global mensajeCxC
-    mensajeCxC = parsear_mensaje(body)
+    mensajeCxC = desempaquetarMensaje(body)
     channel2.stop_consuming()
 
 def recibirYProcesarMensajeADI():
@@ -39,17 +39,17 @@ def recibirYProcesarMensajeCxC():
     channel2.basic_consume(queue=queue_name, on_message_callback=callback2, auto_ack=True)
     channel2.start_consuming()
 
-def parsear_mensaje(mensaje):
+def desempaquetarMensaje(mensaje):
     try:
         mensajeRecibido = json.loads(mensaje)
     except json.JSONDecodeError as e:
         mensajeRecibido = None
     return mensajeRecibido
 
-def desparsear_mensaje(mensaje):
+def empaquetarMensaje(mensaje):
     return json.dumps(mensaje)
 
 def publish_message(data):
-    message_body = desparsear_mensaje(data)
+    message_body = empaquetarMensaje(data)
     channel1.basic_publish(exchange='', routing_key=REQUEST_QUEUE_NAME, body=message_body)
     print("Mensaje enviado al ADI")

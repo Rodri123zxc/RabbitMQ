@@ -39,14 +39,14 @@ public class RabbitMQ {
             
             System.out.println("Mensaje resigbido: "+mensaje);
             
-            mensajeRecibido = parsearMensaje(mensaje);
+            mensajeRecibido = desempaquetarMensaje(mensaje);
             
             System.out.println("Mensaje parseado resigbido: "+mensajeRecibido.toString());
         };
         channel.basicConsume(REQUEST_QUEUE_NAME, true, deliverCallback, consumerTag -> {});
     }
 
-    private String[][] parsearMensaje(String mensaje) {
+    private String[][] desempaquetarMensaje(String mensaje) {
         String[][] mensajeRecibido;
         try {
             Gson gson = new Gson();
@@ -57,19 +57,19 @@ public class RabbitMQ {
         return mensajeRecibido;
     }
     
-    private String desparsearMensaje(String[][] mensaje) {
+    private String empaquetarMensaje(String[][] mensaje) {
         Gson gson = new Gson();
         return gson.toJson(mensaje);
     }
     
-    private String desparsearMensaje(boolean mensaje) {
+    private String empaquetarMensaje(boolean mensaje) {
         Gson gson = new Gson();
         return gson.toJson(mensaje);
     }
     
     public void enviarResultado(boolean resultado) throws Exception {
         
-        String respuesta = desparsearMensaje(resultado);
+        String respuesta = empaquetarMensaje(resultado);
         
         System.out.println("MENSAJE PARA ENVIAR A RESERVA: " + respuesta);
         
@@ -80,7 +80,7 @@ public class RabbitMQ {
     
     public void enviarMensaje(String[][] mensaje) throws Exception {
         
-        String mensajeADI = desparsearMensaje(mensaje);
+        String mensajeADI = RabbitMQ.this.empaquetarMensaje(mensaje);
         
         System.out.println("MENSAJE PARA ENVIAR A RESERVA: " + mensajeADI);
         

@@ -10,7 +10,40 @@
 <body>
     <header>
         <h1>Tienda de útiles FISI</h1>
+        <div class="user-section">
+            <button id="loginBtn" onclick="mostrarFormularioLogin()">Iniciar sesión</button>
+            <button id="registerBtn" onclick="mostrarFormularioRegistro()">Registrarse</button>
+            <span id="welcomeMsg" style="display: none;"></span>
+        </div>
+
+        <div class="bienvenida" style="display: none;">
+            <span id="mensajeBienvenida"></span>
+            <button id="registerBtn" onclick="cerrarSesion()">Cerrar sesión</button>
+        </div>
     </header>
+
+    <div class="registro-form" style="display: none;">
+        <h2>Registro</h2>
+        <input type="text" id="registroNombres" placeholder="Nombres">
+        <input type="text" id="registroApellidos" placeholder="Apellidos">
+        <input type="email" id="registroCorreo" placeholder="Correo electronico">
+        <input type="password" id="registroContrasena" placeholder="Contrasena">
+        <input type="text" id="registroDireccion" placeholder="Direccion">
+        <input type="text" id="registroCiudad" placeholder="Ciudad">
+        <input type="text" id="registroRuc" placeholder="RUC" pattern="[0-9]{1,10}" inputmode="numeric" maxlength="10">
+        <input type="text" id="registroTelefono" placeholder="Telefono" pattern="[0-9]{1,10}" inputmode="numeric" maxlength="9">
+        <button class="button-log" onclick="registrar()">Registrarse</button>
+    </div>
+    
+    <div class="login-form" style="display: none;">
+        <h2>Login</h2>
+        <input type="email" id="loginCorreo" placeholder="Correo electronico">
+        <input type="password" id="loginContrasena" placeholder="Contrasena">
+        <button class="button-log" onclick= "iniciarSesion()">Iniciar sesión</button>
+    </div>
+
+
+    
     <section class="contenedor">
         <!-- Contenedor de elementos -->
         <div class="contenedor-items" id="listaArticulos"> </div>

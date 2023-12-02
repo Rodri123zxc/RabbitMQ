@@ -22,12 +22,29 @@ let imagenes = [
     "/static/img/goma_barra.jpg",
 ]
 
+
+let data_log = null;
+
+
 window.addEventListener('DOMContentLoaded', async () => {
     const respuesta = await fetch('/api/articulos');
     const data = await respuesta.json()
+
+    const respuesta_log = await fetch('/api/verificar-sesion'); // Endpoint para verificar la sesión
+    data_log = await respuesta_log.json();
+
+    
     articulos = data
 
+
     renderArticulo(articulos)
+
+    if (data_log != null) {
+        quitarAccesos();
+        mostrarMensajeBienvenida(data_log.Nombre+" "+data_log.Apellido); // Mostrar bienvenida si el usuario está logeado
+    } else {
+        darAccesos();
+    }
     agregarEventListeners()
 })
 
@@ -59,6 +76,147 @@ function agregarEventListeners() {
         button.addEventListener('click', agregarAlCarritoClicked);
     });
 }
+//------------------------------------------------------------------------------------------------
+function cerrarSesion() {
+    fetch('/api/cerrar-sesion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ })
+    })
+    window.location.reload();
+}
+
+function mostrarMensajeBienvenida(nombreUsuario) {
+    document.querySelector('.registro-form').style.display = 'none';
+    document.querySelector('.login-form').style.display = 'none';
+
+    const mensajeBienvenida = document.getElementById('mensajeBienvenida');
+    mensajeBienvenida.innerText = `Bienvenido, ${nombreUsuario}!`;
+    document.querySelector('.bienvenida').style.display = 'block';
+}
+function quitarAccesos(){
+    document.querySelector('.user-section').style.display = 'none'; 
+}
+function darAccesos(){
+    document.querySelector('.user-section').style.display = 'block'; 
+}
+
+function mostrarFormularioRegistro() {
+    var registroForm = document.querySelector('.registro-form');
+    var estiloRegistro = window.getComputedStyle(registroForm);
+
+    if (estiloRegistro.display === 'none'){
+        document.querySelector('.login-form').style.display = 'none';
+        registroForm.style.display = 'block';
+    } else {
+        document.querySelector('.login-form').style.display = 'none';
+        registroForm.style.display = 'none';
+    }
+}
+
+function mostrarFormularioLogin() {
+    var registroForm = document.querySelector('.login-form');
+    var estiloRegistro = window.getComputedStyle(registroForm);
+
+    if (estiloRegistro.display === 'none'){
+        document.querySelector('.registro-form').style.display = 'none';
+        registroForm.style.display = 'block';
+    } else {
+        document.querySelector('.registro-form').style.display = 'none';
+        registroForm.style.display = 'none';
+    }
+}
+//------------------------------------------------------------------------------------------------
+function registrar() {
+    const nombres = document.getElementById('registroNombres').value;
+    const apellidos = document.getElementById('registroApellidos').value;
+    const correo = document.getElementById('registroCorreo').value;
+    const contrasena = document.getElementById('registroContrasena').value;
+    const direccion = document.getElementById('registroDireccion').value;
+    const ciudad = document.getElementById('registroCiudad').value;
+    const ruc = document.getElementById('registroRuc').value;
+    const telefono = document.getElementById('registroTelefono').value;
+
+    console.log("Nombres: "+nombres);
+    console.log("Apellidos: "+apellidos);
+    console.log("Correo: "+correo);
+    console.log("Contrasena: "+contrasena);
+    console.log("Direccion: "+direccion);
+    console.log("Ciudad: "+ciudad);
+    console.log("Ruc: "+ruc);
+    console.log("Telefono: "+telefono);
+
+
+    console.log('REGISTRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+
+    registrarBackend(nombres, apellidos, correo, contrasena, direccion, ciudad, ruc, telefono, function(response){
+        if (response && response.success){
+            data_log = response.data_usuario;
+            quitarAccesos();
+            mostrarMensajeBienvenida(data_log.Nombres+" "+data_log.Apellidos);
+            alert('Registro de usuario correto !');
+        }
+        else{
+            //mostrarFormularioRegistro() 
+            alert(response.message);
+        }
+    });
+}
+function registrarBackend(nombres, apellidos, correo, contrasena, direccion, ciudad, ruc, telefono, callback) {
+    fetch('/api/registro', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ nombres, apellidos, correo, contrasena, direccion, ciudad, ruc, telefono })
+    })
+    .then(response => response.json())
+    .then(data => {
+        callback(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        callback({ success: false, message: 'Error en la solicitud al servidor' });
+    });
+}
+//------------------------------------------------------------------------------------------------
+function iniciarSesion(){
+    const correo = document.getElementById('loginCorreo').value;
+    const contrasena = document.getElementById('loginContrasena').value;
+    iniciarSesionBackend(correo, contrasena, function(response){
+        if (response && response.success){
+            data_log = response.data_usuario;
+            quitarAccesos();
+            mostrarMensajeBienvenida(data_log.Nombres+" "+data_log.Apellidos);
+            alert('Inicio de sesión correcta !');
+        }
+        else{
+            //mostrarFormularioLogin() 
+            alert(response.message);
+        }
+    });
+}
+function iniciarSesionBackend(correo, contrasena, callback) {
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ correo, contrasena })
+    })
+    .then(response => response.json())
+    .then(data => {
+        callback(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        callback({ success: false, message: 'Error en la solicitud al servidor' });
+    });
+}
+//------------------------------------------------------------------------------------------------
+
 
 
 
@@ -116,39 +274,50 @@ function pagarClicked(){
     var itemsCarrito = document.querySelectorAll('.carrito-item');
     var itemsSeleccionados = [];
 
-    itemsCarrito.forEach(item => {
-        var id = item.querySelector('.carrito-item-id').innerText;
-        var titulo = item.querySelector('.carrito-item-titulo').innerText;
-        var cantidad = item.querySelector('.carrito-item-cantidad').value;
+    
+    if (data_log != null) {
+        agregarEventListeners()
 
-        itemsSeleccionados.push([id, titulo, cantidad]);
-    });
+        itemsCarrito.forEach(item => {
+            var id = item.querySelector('.carrito-item-id').innerText;
+            var titulo = item.querySelector('.carrito-item-titulo').innerText;
+            var cantidad = item.querySelector('.carrito-item-cantidad').value;
 
-    enviarAlBackend(itemsSeleccionados, function(response) {
-        if (response && response.success) {
-            var resultadoFinal = response.resultado_final;
+            itemsSeleccionados.push([id, titulo, cantidad]);
+        });
 
-            alert("Gracias por la compra!\nDatos de su compra: "+ resultadoFinal);
-            var carritoItems = document.getElementsByClassName('carrito-items')[0];
-            while (carritoItems.hasChildNodes()) {
-                carritoItems.removeChild(carritoItems.firstChild);
+        //mensaje = [itemsSeleccionados,data_log]
+
+        mensaje = itemsSeleccionados;
+
+        enviarAlBackend(mensaje, function(response) {
+            if (response && response.success) {
+                var resultadoFinal = response.resultado_final;
+
+                alert("Gracias por la compra!\nDatos de su compra: "+ resultadoFinal);
+                var carritoItems = document.getElementsByClassName('carrito-items')[0];
+                while (carritoItems.hasChildNodes()) {
+                    carritoItems.removeChild(carritoItems.firstChild);
+                }
+                actualizarTotalCarrito();
+                ocultarCarrito();
+            } else {
+                alert(response.message);
             }
-            actualizarTotalCarrito();
-            ocultarCarrito();
-        } else {
-            // Hacer algo si la respuesta no fue exitosa
-            alert("Error, algunos items no estan disponibles");
-        }
-    });
+        });
+    } else {
+        alert('Debe iniciar sesión antes de proceder con la compra !');
+    }
+    
 }
 
-function enviarAlBackend(itemsSeleccionados, callback) {
+function enviarAlBackend(mensaje, callback) {
     fetch('/api/pagar', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(itemsSeleccionados)
+        body: JSON.stringify(mensaje)
     })
     .then(response => response.json())
     .then(data => {
@@ -283,6 +452,7 @@ function ocultarCarrito(){
         items.style.width = '100%';
     }
 }
+
 //Actualizamos el total de Carrito
 function actualizarTotalCarrito(){
     var carritoItems = document.getElementsByClassName('carrito-item');

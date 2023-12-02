@@ -24,25 +24,25 @@ class RabbitMQ:
         
     def recibirYProcesarMensaje(self):
         def callback(ch, method, properties, body):
-            self.mensajeRecibido = self.parsear_mensaje(body)
+            self.mensajeRecibido = self.desempaquetarMensaje(body)
             self.channel.stop_consuming()
         
         self.channel.basic_consume(queue=self.queue_name, on_message_callback=callback, auto_ack=True)
         self.channel.start_consuming()
         
         
-    def parsear_mensaje(self, mensaje):
+    def desempaquetarMensaje(self, mensaje):
         try:
             mensaje_recibido = json.loads(mensaje)
         except json.JSONDecodeError as e:
             mensaje_recibido = None
         return mensaje_recibido
     
-    def desparsear_mensaje(self, mensaje):
+    def empaquetarMensaje(self, mensaje):
         return json.dumps(mensaje)
     
     def enviarMensaje(self, mensaje):
-        mensaje_r = self.desparsear_mensaje(mensaje)
+        mensaje_r = self.empaquetarMensaje(mensaje)
         
         print("mensaje_r: "+str(mensaje_r))
         self.channel.basic_publish(exchange=self.PUBLISH_EXCHANGE_NAME, routing_key=self.PUBLISH_QUEUE_NAME, body=mensaje_r)
